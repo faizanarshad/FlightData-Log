@@ -104,11 +104,8 @@ def run_dashboard(args):
     """Run dashboard generation scripts."""
     print("🎨 Creating interactive dashboards...")
     try:
-        from src.dashboard.modern_dashboard import main as modern_main
+        # Only generate the beautiful dashboard to keep project minimal
         from src.dashboard.beautiful_dashboard import main as beautiful_main
-        
-        print("  - Creating modern dashboard...")
-        modern_main()
         
         print("  - Creating beautiful dashboard...")
         beautiful_main()
