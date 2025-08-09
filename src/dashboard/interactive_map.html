@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_93e2c9872be93c62f2022786e3446277 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_93e2c9872be93c62f2022786e3446277" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_93e2c9872be93c62f2022786e3446277 = L.map(
+                "map_93e2c9872be93c62f2022786e3446277",
+                {
+                    center: [20.5937, 78.9629],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 5,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_1592c8c1d9e8f40445a85685b5392dfe = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_1592c8c1d9e8f40445a85685b5392dfe.addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var marker_236f6f275345b05739882a4cbf6ced88 = L.marker(
+                [28.7041, 77.1025],
+                {
+}
+            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var icon_aa40f15833db5369e9ee2d713d32ff1f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "plane",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_272f69a007b3fc2e875e07b0ad1760aa = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ce1aba6c929115f5609aa5bcdbac68ae = $(`<div id="html_ce1aba6c929115f5609aa5bcdbac68ae" style="width: 100.0%; height: 100.0%;">         <b>Delhi</b><br>         Total Flights: 61,343<br>         Avg Price: $18,951         </div>`)[0];
+                popup_272f69a007b3fc2e875e07b0ad1760aa.setContent(html_ce1aba6c929115f5609aa5bcdbac68ae);
+            
+        
+
+        marker_236f6f275345b05739882a4cbf6ced88.bindPopup(popup_272f69a007b3fc2e875e07b0ad1760aa)
+        ;
+
+        
+    
+    
+            marker_236f6f275345b05739882a4cbf6ced88.bindTooltip(
+                `<div>
+                     Delhi
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_236f6f275345b05739882a4cbf6ced88.setIcon(icon_aa40f15833db5369e9ee2d713d32ff1f);
+            
+    
+            var marker_36b8882726ef12c9abb7e421c92add30 = L.marker(
+                [19.076, 72.8777],
+                {
+}
+            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var icon_00b1f21faf4623a5b561d5b22b0389b0 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "plane",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_15a104e81c6d7b50f66f4a7f90ac26c0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e2f078292584770f823ac555413f99df = $(`<div id="html_e2f078292584770f823ac555413f99df" style="width: 100.0%; height: 100.0%;">         <b>Mumbai</b><br>         Total Flights: 60,896<br>         Avg Price: $21,484         </div>`)[0];
+                popup_15a104e81c6d7b50f66f4a7f90ac26c0.setContent(html_e2f078292584770f823ac555413f99df);
+            
+        
+
+        marker_36b8882726ef12c9abb7e421c92add30.bindPopup(popup_15a104e81c6d7b50f66f4a7f90ac26c0)
+        ;
+
+        
+    
+    
+            marker_36b8882726ef12c9abb7e421c92add30.bindTooltip(
+                `<div>
+                     Mumbai
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_36b8882726ef12c9abb7e421c92add30.setIcon(icon_00b1f21faf4623a5b561d5b22b0389b0);
+            
+    
+            var marker_582f7cd33eddd86964b9de67881cbc4d = L.marker(
+                [12.9716, 77.5946],
+                {
+}
+            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var icon_50c54793cd3735d842c2c5c62b1eb9bd = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "plane",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d36010a3d7d11af31bb82526ee4a4712 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d25cc8f9bdf2e38b81aadc031a5224a5 = $(`<div id="html_d25cc8f9bdf2e38b81aadc031a5224a5" style="width: 100.0%; height: 100.0%;">         <b>Bangalore</b><br>         Total Flights: 52,061<br>         Avg Price: $21,469         </div>`)[0];
+                popup_d36010a3d7d11af31bb82526ee4a4712.setContent(html_d25cc8f9bdf2e38b81aadc031a5224a5);
+            
+        
+
+        marker_582f7cd33eddd86964b9de67881cbc4d.bindPopup(popup_d36010a3d7d11af31bb82526ee4a4712)
+        ;
+
+        
+    
+    
+            marker_582f7cd33eddd86964b9de67881cbc4d.bindTooltip(
+                `<div>
+                     Bangalore
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_582f7cd33eddd86964b9de67881cbc4d.setIcon(icon_50c54793cd3735d842c2c5c62b1eb9bd);
+            
+    
+            var marker_1f29f4049ced6bd304deb19df03ef609 = L.marker(
+                [22.5726, 88.3639],
+                {
+}
+            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var icon_c4bdfe689c6c67ce9f84d05d8ffeffad = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "plane",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_6d87344b388e3e6287f57043432cd0ec = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e345cd9ab5d8232d4db3a562afaa2c5b = $(`<div id="html_e345cd9ab5d8232d4db3a562afaa2c5b" style="width: 100.0%; height: 100.0%;">         <b>Kolkata</b><br>         Total Flights: 46,347<br>         Avg Price: $21,746         </div>`)[0];
+                popup_6d87344b388e3e6287f57043432cd0ec.setContent(html_e345cd9ab5d8232d4db3a562afaa2c5b);
+            
+        
+
+        marker_1f29f4049ced6bd304deb19df03ef609.bindPopup(popup_6d87344b388e3e6287f57043432cd0ec)
+        ;
+
+        
+    
+    
+            marker_1f29f4049ced6bd304deb19df03ef609.bindTooltip(
+                `<div>
+                     Kolkata
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_1f29f4049ced6bd304deb19df03ef609.setIcon(icon_c4bdfe689c6c67ce9f84d05d8ffeffad);
+            
+    
+            var marker_398bb4795d85e52aff105504c066c49c = L.marker(
+                [17.385, 78.4867],
+                {
+}
+            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var icon_d4db5fa3b71bfb5a11cb26a19ec82790 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "plane",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_30fb1347bd8f22ebf1c55de33a288772 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e4d8f93ff09cb7608dfe70e89704081b = $(`<div id="html_e4d8f93ff09cb7608dfe70e89704081b" style="width: 100.0%; height: 100.0%;">         <b>Hyderabad</b><br>         Total Flights: 40,806<br>         Avg Price: $20,156         </div>`)[0];
+                popup_30fb1347bd8f22ebf1c55de33a288772.setContent(html_e4d8f93ff09cb7608dfe70e89704081b);
+            
+        
+
+        marker_398bb4795d85e52aff105504c066c49c.bindPopup(popup_30fb1347bd8f22ebf1c55de33a288772)
+        ;
+
+        
+    
+    
+            marker_398bb4795d85e52aff105504c066c49c.bindTooltip(
+                `<div>
+                     Hyderabad
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_398bb4795d85e52aff105504c066c49c.setIcon(icon_d4db5fa3b71bfb5a11cb26a19ec82790);
+            
+    
+            var marker_b0cd25b32ebe01b85c8afb2be226bea7 = L.marker(
+                [13.0827, 80.2707],
+                {
+}
+            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+        
+    
+            var icon_a67452b572206e77264ac33dd103c0f7 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "plane",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_b9dfb31d7dbe27d2f0d4ace30fb93313 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_15df8b46a2016f058d8642d318d2e61f = $(`<div id="html_15df8b46a2016f058d8642d318d2e61f" style="width: 100.0%; height: 100.0%;">         <b>Chennai</b><br>         Total Flights: 38,700<br>         Avg Price: $21,995         </div>`)[0];
+                popup_b9dfb31d7dbe27d2f0d4ace30fb93313.setContent(html_15df8b46a2016f058d8642d318d2e61f);
+            
+        
+
+        marker_b0cd25b32ebe01b85c8afb2be226bea7.bindPopup(popup_b9dfb31d7dbe27d2f0d4ace30fb93313)
+        ;
+
+        
+    
+    
+            marker_b0cd25b32ebe01b85c8afb2be226bea7.bindTooltip(
+                `<div>
+                     Chennai
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b0cd25b32ebe01b85c8afb2be226bea7.setIcon(icon_a67452b572206e77264ac33dd103c0f7);
+            
+</script>
+</html>

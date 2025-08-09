@@ -1,0 +1,69 @@
+# Flight Data Analysis Configuration
+# =================================
+
+# Data Configuration
+data:
+  raw_data_path: "data/raw/airlines_flights_data.csv"
+  processed_data_path: "data/processed/"
+  output_path: "output/"
+
+# Analysis Configuration
+analysis:
+  sample_size: null  # null for full dataset, or specify number for sampling
+  random_state: 42
+  correlation_threshold: 0.5
+  outlier_threshold: 3.0  # Standard deviations for outlier detection
+
+# Visualization Configuration
+visualization:
+  theme: "plotly_white"
+  color_palette: "viridis"
+  figure_width: 1200
+  figure_height: 800
+  dpi: 300
+  
+  # Chart-specific settings
+  charts:
+    histogram:
+      bins: 50
+    boxplot:
+      show_outliers: true
+    heatmap:
+      annot: true
+      cmap: "YlOrRd"
+    scatter:
+      alpha: 0.6
+      size: 8
+
+# Dashboard Configuration
+dashboard:
+  title: "Flight Data Analysis Dashboard"
+  subtitle: "Comprehensive Analysis of Indian Domestic Airlines"
+  theme_color: "#1f77b4"
+  background_color: "#f8f9fa"
+  
+  # Layout settings
+  layout:
+    rows: 3
+    cols: 2
+    height: 1000
+    width: 1400
+
+# Export Configuration
+export:
+  formats: ["html", "png", "pdf"]
+  html_template: "plotly"
+  image_format: "png"
+  image_scale: 2
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/analysis.log"
+
+# Performance Configuration
+performance:
+  use_multiprocessing: false
+  max_workers: 4
+  chunk_size: 10000 

@@ -1,0 +1,25 @@
+AIRLINES FLIGHTS DATASET SUMMARY
+==================================================
+Dataset shape: (300153, 12)
+Number of rows: 300,153
+Number of columns: 12
+
+COLUMNS:
+1. index
+2. airline
+3. flight
+4. source_city
+5. departure_time
+6. stops
+7. arrival_time
+8. destination_city
+9. class
+10. duration
+11. days_left
+12. price
+
+PRICE STATISTICS:
+Min: $1,105
+Max: $123,071
+Mean: $20,890
+Median: $7,425

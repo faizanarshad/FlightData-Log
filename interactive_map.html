@@ -17,7 +17,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_93e2c9872be93c62f2022786e3446277 {
+                #map_d5d8af06c856b7609eecfb39415ad5c5 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -54,14 +54,14 @@
 <body>
     
     
-            <div class="folium-map" id="map_93e2c9872be93c62f2022786e3446277" ></div>
+            <div class="folium-map" id="map_d5d8af06c856b7609eecfb39415ad5c5" ></div>
         
 </body>
 <script>
     
     
-            var map_93e2c9872be93c62f2022786e3446277 = L.map(
-                "map_93e2c9872be93c62f2022786e3446277",
+            var map_d5d8af06c856b7609eecfb39415ad5c5 = L.map(
+                "map_d5d8af06c856b7609eecfb39415ad5c5",
                 {
                     center: [20.5937, 78.9629],
                     crs: L.CRS.EPSG3857,
@@ -78,15 +78,15 @@
 
         
     
-            var tile_layer_1592c8c1d9e8f40445a85685b5392dfe = L.tileLayer(
-                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+            var tile_layer_e58b0e2fa0ab6f7235ead54c498281cc = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
-  "maxZoom": 20,
-  "maxNativeZoom": 20,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
   "noWrap": false,
-  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
-  "subdomains": "abcd",
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
   "detectRetina": false,
   "tms": false,
   "opacity": 1,
@@ -95,17 +95,17 @@
             );
         
     
-            tile_layer_1592c8c1d9e8f40445a85685b5392dfe.addTo(map_93e2c9872be93c62f2022786e3446277);
+            tile_layer_e58b0e2fa0ab6f7235ead54c498281cc.addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var marker_236f6f275345b05739882a4cbf6ced88 = L.marker(
+            var marker_6b2bc6d4318889225708760ac0bd0abf = L.marker(
                 [28.7041, 77.1025],
                 {
 }
-            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+            ).addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var icon_aa40f15833db5369e9ee2d713d32ff1f = L.AwesomeMarkers.icon(
+            var icon_f9cb470fadc73d3a3705a51d22392717 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "red",
   "iconColor": "white",
@@ -116,24 +116,24 @@
             );
         
     
-        var popup_272f69a007b3fc2e875e07b0ad1760aa = L.popup({
+        var popup_605c66be51226416cf52e5b2c435701c = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_ce1aba6c929115f5609aa5bcdbac68ae = $(`<div id="html_ce1aba6c929115f5609aa5bcdbac68ae" style="width: 100.0%; height: 100.0%;">         <b>Delhi</b><br>         Total Flights: 61,343<br>         Avg Price: $18,951         </div>`)[0];
-                popup_272f69a007b3fc2e875e07b0ad1760aa.setContent(html_ce1aba6c929115f5609aa5bcdbac68ae);
+                var html_1b0cfafc22884cd54bf8a130839737b6 = $(`<div id="html_1b0cfafc22884cd54bf8a130839737b6" style="width: 100.0%; height: 100.0%;"><b>Delhi</b><br>Flights from: 61,343<br>Flights to: 57,360</div>`)[0];
+                popup_605c66be51226416cf52e5b2c435701c.setContent(html_1b0cfafc22884cd54bf8a130839737b6);
             
         
 
-        marker_236f6f275345b05739882a4cbf6ced88.bindPopup(popup_272f69a007b3fc2e875e07b0ad1760aa)
+        marker_6b2bc6d4318889225708760ac0bd0abf.bindPopup(popup_605c66be51226416cf52e5b2c435701c)
         ;
 
         
     
     
-            marker_236f6f275345b05739882a4cbf6ced88.bindTooltip(
+            marker_6b2bc6d4318889225708760ac0bd0abf.bindTooltip(
                 `<div>
                      Delhi
                  </div>`,
@@ -143,17 +143,17 @@
             );
         
     
-                marker_236f6f275345b05739882a4cbf6ced88.setIcon(icon_aa40f15833db5369e9ee2d713d32ff1f);
+                marker_6b2bc6d4318889225708760ac0bd0abf.setIcon(icon_f9cb470fadc73d3a3705a51d22392717);
             
     
-            var marker_36b8882726ef12c9abb7e421c92add30 = L.marker(
+            var marker_3393a07d03e1d8ea7551d7f37f02e74b = L.marker(
                 [19.076, 72.8777],
                 {
 }
-            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+            ).addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var icon_00b1f21faf4623a5b561d5b22b0389b0 = L.AwesomeMarkers.icon(
+            var icon_0b7ab6c345293d0c33ea147c401a14c2 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "red",
   "iconColor": "white",
@@ -164,24 +164,24 @@
             );
         
     
-        var popup_15a104e81c6d7b50f66f4a7f90ac26c0 = L.popup({
+        var popup_b6f302daa44eb6b5a8b451dc5fd69565 = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_e2f078292584770f823ac555413f99df = $(`<div id="html_e2f078292584770f823ac555413f99df" style="width: 100.0%; height: 100.0%;">         <b>Mumbai</b><br>         Total Flights: 60,896<br>         Avg Price: $21,484         </div>`)[0];
-                popup_15a104e81c6d7b50f66f4a7f90ac26c0.setContent(html_e2f078292584770f823ac555413f99df);
+                var html_fd65a103bdb7be50078d9bef9f03f549 = $(`<div id="html_fd65a103bdb7be50078d9bef9f03f549" style="width: 100.0%; height: 100.0%;"><b>Mumbai</b><br>Flights from: 60,896<br>Flights to: 59,097</div>`)[0];
+                popup_b6f302daa44eb6b5a8b451dc5fd69565.setContent(html_fd65a103bdb7be50078d9bef9f03f549);
             
         
 
-        marker_36b8882726ef12c9abb7e421c92add30.bindPopup(popup_15a104e81c6d7b50f66f4a7f90ac26c0)
+        marker_3393a07d03e1d8ea7551d7f37f02e74b.bindPopup(popup_b6f302daa44eb6b5a8b451dc5fd69565)
         ;
 
         
     
     
-            marker_36b8882726ef12c9abb7e421c92add30.bindTooltip(
+            marker_3393a07d03e1d8ea7551d7f37f02e74b.bindTooltip(
                 `<div>
                      Mumbai
                  </div>`,
@@ -191,17 +191,17 @@
             );
         
     
-                marker_36b8882726ef12c9abb7e421c92add30.setIcon(icon_00b1f21faf4623a5b561d5b22b0389b0);
+                marker_3393a07d03e1d8ea7551d7f37f02e74b.setIcon(icon_0b7ab6c345293d0c33ea147c401a14c2);
             
     
-            var marker_582f7cd33eddd86964b9de67881cbc4d = L.marker(
+            var marker_2cc8ee5d9124511a4073236d99457176 = L.marker(
                 [12.9716, 77.5946],
                 {
 }
-            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+            ).addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var icon_50c54793cd3735d842c2c5c62b1eb9bd = L.AwesomeMarkers.icon(
+            var icon_3ebb590737f7e66a40c4ac693414c835 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "red",
   "iconColor": "white",
@@ -212,24 +212,24 @@
             );
         
     
-        var popup_d36010a3d7d11af31bb82526ee4a4712 = L.popup({
+        var popup_cab9dd43a651243309f41a5e527e51af = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_d25cc8f9bdf2e38b81aadc031a5224a5 = $(`<div id="html_d25cc8f9bdf2e38b81aadc031a5224a5" style="width: 100.0%; height: 100.0%;">         <b>Bangalore</b><br>         Total Flights: 52,061<br>         Avg Price: $21,469         </div>`)[0];
-                popup_d36010a3d7d11af31bb82526ee4a4712.setContent(html_d25cc8f9bdf2e38b81aadc031a5224a5);
+                var html_e470286616c363890179df00baea774d = $(`<div id="html_e470286616c363890179df00baea774d" style="width: 100.0%; height: 100.0%;"><b>Bangalore</b><br>Flights from: 52,061<br>Flights to: 51,068</div>`)[0];
+                popup_cab9dd43a651243309f41a5e527e51af.setContent(html_e470286616c363890179df00baea774d);
             
         
 
-        marker_582f7cd33eddd86964b9de67881cbc4d.bindPopup(popup_d36010a3d7d11af31bb82526ee4a4712)
+        marker_2cc8ee5d9124511a4073236d99457176.bindPopup(popup_cab9dd43a651243309f41a5e527e51af)
         ;
 
         
     
     
-            marker_582f7cd33eddd86964b9de67881cbc4d.bindTooltip(
+            marker_2cc8ee5d9124511a4073236d99457176.bindTooltip(
                 `<div>
                      Bangalore
                  </div>`,
@@ -239,17 +239,17 @@
             );
         
     
-                marker_582f7cd33eddd86964b9de67881cbc4d.setIcon(icon_50c54793cd3735d842c2c5c62b1eb9bd);
+                marker_2cc8ee5d9124511a4073236d99457176.setIcon(icon_3ebb590737f7e66a40c4ac693414c835);
             
     
-            var marker_1f29f4049ced6bd304deb19df03ef609 = L.marker(
+            var marker_ff0f439f974f4ed6376d8bf3f7a183dc = L.marker(
                 [22.5726, 88.3639],
                 {
 }
-            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+            ).addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var icon_c4bdfe689c6c67ce9f84d05d8ffeffad = L.AwesomeMarkers.icon(
+            var icon_b70d3e4731ee771e14933331c75ae6fe = L.AwesomeMarkers.icon(
                 {
   "markerColor": "red",
   "iconColor": "white",
@@ -260,24 +260,24 @@
             );
         
     
-        var popup_6d87344b388e3e6287f57043432cd0ec = L.popup({
+        var popup_778d8ed4f39a154523246940b12ff325 = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_e345cd9ab5d8232d4db3a562afaa2c5b = $(`<div id="html_e345cd9ab5d8232d4db3a562afaa2c5b" style="width: 100.0%; height: 100.0%;">         <b>Kolkata</b><br>         Total Flights: 46,347<br>         Avg Price: $21,746         </div>`)[0];
-                popup_6d87344b388e3e6287f57043432cd0ec.setContent(html_e345cd9ab5d8232d4db3a562afaa2c5b);
+                var html_15ce40de83b2e29ef93a1c69fc9bae35 = $(`<div id="html_15ce40de83b2e29ef93a1c69fc9bae35" style="width: 100.0%; height: 100.0%;"><b>Kolkata</b><br>Flights from: 46,347<br>Flights to: 49,534</div>`)[0];
+                popup_778d8ed4f39a154523246940b12ff325.setContent(html_15ce40de83b2e29ef93a1c69fc9bae35);
             
         
 
-        marker_1f29f4049ced6bd304deb19df03ef609.bindPopup(popup_6d87344b388e3e6287f57043432cd0ec)
+        marker_ff0f439f974f4ed6376d8bf3f7a183dc.bindPopup(popup_778d8ed4f39a154523246940b12ff325)
         ;
 
         
     
     
-            marker_1f29f4049ced6bd304deb19df03ef609.bindTooltip(
+            marker_ff0f439f974f4ed6376d8bf3f7a183dc.bindTooltip(
                 `<div>
                      Kolkata
                  </div>`,
@@ -287,17 +287,17 @@
             );
         
     
-                marker_1f29f4049ced6bd304deb19df03ef609.setIcon(icon_c4bdfe689c6c67ce9f84d05d8ffeffad);
+                marker_ff0f439f974f4ed6376d8bf3f7a183dc.setIcon(icon_b70d3e4731ee771e14933331c75ae6fe);
             
     
-            var marker_398bb4795d85e52aff105504c066c49c = L.marker(
+            var marker_1e9d2b9811389cc9744f9e5361e71f4a = L.marker(
                 [17.385, 78.4867],
                 {
 }
-            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+            ).addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var icon_d4db5fa3b71bfb5a11cb26a19ec82790 = L.AwesomeMarkers.icon(
+            var icon_5f96292d129bbf60490caa5f79fc98a8 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "red",
   "iconColor": "white",
@@ -308,24 +308,24 @@
             );
         
     
-        var popup_30fb1347bd8f22ebf1c55de33a288772 = L.popup({
+        var popup_f57dab8db239c8eeb5453311e0e21b06 = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_e4d8f93ff09cb7608dfe70e89704081b = $(`<div id="html_e4d8f93ff09cb7608dfe70e89704081b" style="width: 100.0%; height: 100.0%;">         <b>Hyderabad</b><br>         Total Flights: 40,806<br>         Avg Price: $20,156         </div>`)[0];
-                popup_30fb1347bd8f22ebf1c55de33a288772.setContent(html_e4d8f93ff09cb7608dfe70e89704081b);
+                var html_d02922b26ec74d5226b8db16cd471a1a = $(`<div id="html_d02922b26ec74d5226b8db16cd471a1a" style="width: 100.0%; height: 100.0%;"><b>Hyderabad</b><br>Flights from: 40,806<br>Flights to: 42,726</div>`)[0];
+                popup_f57dab8db239c8eeb5453311e0e21b06.setContent(html_d02922b26ec74d5226b8db16cd471a1a);
             
         
 
-        marker_398bb4795d85e52aff105504c066c49c.bindPopup(popup_30fb1347bd8f22ebf1c55de33a288772)
+        marker_1e9d2b9811389cc9744f9e5361e71f4a.bindPopup(popup_f57dab8db239c8eeb5453311e0e21b06)
         ;
 
         
     
     
-            marker_398bb4795d85e52aff105504c066c49c.bindTooltip(
+            marker_1e9d2b9811389cc9744f9e5361e71f4a.bindTooltip(
                 `<div>
                      Hyderabad
                  </div>`,
@@ -335,17 +335,17 @@
             );
         
     
-                marker_398bb4795d85e52aff105504c066c49c.setIcon(icon_d4db5fa3b71bfb5a11cb26a19ec82790);
+                marker_1e9d2b9811389cc9744f9e5361e71f4a.setIcon(icon_5f96292d129bbf60490caa5f79fc98a8);
             
     
-            var marker_b0cd25b32ebe01b85c8afb2be226bea7 = L.marker(
+            var marker_64c2d8248beb7eafcafd26086ec24e32 = L.marker(
                 [13.0827, 80.2707],
                 {
 }
-            ).addTo(map_93e2c9872be93c62f2022786e3446277);
+            ).addTo(map_d5d8af06c856b7609eecfb39415ad5c5);
         
     
-            var icon_a67452b572206e77264ac33dd103c0f7 = L.AwesomeMarkers.icon(
+            var icon_95a8949435ce6e0e0de121738cb1141b = L.AwesomeMarkers.icon(
                 {
   "markerColor": "red",
   "iconColor": "white",
@@ -356,24 +356,24 @@
             );
         
     
-        var popup_b9dfb31d7dbe27d2f0d4ace30fb93313 = L.popup({
+        var popup_78669fa032f2be95fcf1579cadcc1360 = L.popup({
   "maxWidth": "100%",
 });
 
         
             
-                var html_15df8b46a2016f058d8642d318d2e61f = $(`<div id="html_15df8b46a2016f058d8642d318d2e61f" style="width: 100.0%; height: 100.0%;">         <b>Chennai</b><br>         Total Flights: 38,700<br>         Avg Price: $21,995         </div>`)[0];
-                popup_b9dfb31d7dbe27d2f0d4ace30fb93313.setContent(html_15df8b46a2016f058d8642d318d2e61f);
+                var html_435c0622845504e4be1d0be3966b1e62 = $(`<div id="html_435c0622845504e4be1d0be3966b1e62" style="width: 100.0%; height: 100.0%;"><b>Chennai</b><br>Flights from: 38,700<br>Flights to: 40,368</div>`)[0];
+                popup_78669fa032f2be95fcf1579cadcc1360.setContent(html_435c0622845504e4be1d0be3966b1e62);
             
         
 
-        marker_b0cd25b32ebe01b85c8afb2be226bea7.bindPopup(popup_b9dfb31d7dbe27d2f0d4ace30fb93313)
+        marker_64c2d8248beb7eafcafd26086ec24e32.bindPopup(popup_78669fa032f2be95fcf1579cadcc1360)
         ;
 
         
     
     
-            marker_b0cd25b32ebe01b85c8afb2be226bea7.bindTooltip(
+            marker_64c2d8248beb7eafcafd26086ec24e32.bindTooltip(
                 `<div>
                      Chennai
                  </div>`,
@@ -383,7 +383,7 @@
             );
         
     
-                marker_b0cd25b32ebe01b85c8afb2be226bea7.setIcon(icon_a67452b572206e77264ac33dd103c0f7);
+                marker_64c2d8248beb7eafcafd26086ec24e32.setIcon(icon_95a8949435ce6e0e0de121738cb1141b);
             
 </script>
 </html>
