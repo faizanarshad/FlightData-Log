@@ -114,123 +114,139 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
     # 1. Enhanced Main Dashboard with gradient colors
     print("📊 Creating Enhanced Main Dashboard...")
     fig_main = make_subplots(
-        rows=3, cols=2,
+        rows=5, cols=2,  # Expanded to 5 rows to accommodate new price analysis graphs
         subplot_titles=(
-            '💰 Price Distribution by Airline',
-            '✈️ Airline Performance Radar',
-            '⏱️ Price vs Duration Analysis',
+            '🔬 Advanced Price Distribution by Airline',
+            '🚀 3D Price-Duration-Days Analysis',
+            '⏱️ Price vs Duration + Days Left Analysis',
             '📊 Market Share by Airline',
-            '📅 Booking Patterns by Days Left',
-            '🛑 Price Analysis by Stops'
+            '🛑 Price Analysis by Stops',
+            '🌍 Route Popularity Map',
+            '💰 Price Distribution by Class',
+            '📈 Price Trends by Departure Time',
+            '🎯 Price vs Distance Analysis',
+            '📊 Price Statistics by Airline'
         ),
         specs=[
-            [{"type": "box"}, {"type": "scatterpolar"}],
+            [{"type": "box"}, {"type": "scene"}],
             [{"type": "scatter"}, {"type": "pie"}],
-            [{"type": "bar"}, {"type": "violin"}]
+            [{"type": "xy"}, {"type": "violin"}],
+            [{"type": "violin"}, {"type": "scatter"}],  # New row for price analysis
+            [{"type": "scatter"}, {"type": "bar"}]       # New row for price analysis
         ],
-        vertical_spacing=0.08,
-        horizontal_spacing=0.05
+        vertical_spacing=0.08,  # Reduced spacing for more compact layout
+        horizontal_spacing=0.08
     )
 
-    # Enhanced price distribution by airline with custom colors
+    # Advanced Price Distribution by Airline with Violin + Box + Density
     for i, airline in enumerate(df['airline'].unique()):
         airline_data = df[df['airline'] == airline]['price']
+        
+        # Add Violin plot for distribution shape
         fig_main.add_trace(
-            go.Box(
-                y=airline_data, 
-                name=airline, 
-                boxpoints='outliers',
-                marker_color=airline_colors[i % len(airline_colors)],
+            go.Violin(
+                y=airline_data,
+                name=f"{airline} (Violin)",
+                box_visible=True,
+                meanline_visible=True,
                 line_color=airline_colors[i % len(airline_colors)],
                 fillcolor=airline_colors[i % len(airline_colors)],
-                opacity=0.7
+                opacity=0.6,
+                showlegend=False
             ),
             row=1, col=1
         )
+        
+        # Add Box plot for quartiles and outliers
+        fig_main.add_trace(
+            go.Box(
+                y=airline_data,
+                name=f"{airline} (Box)",
+                boxpoints='outliers',
+                marker_color=airline_colors[i % len(airline_colors)],
+                line_color=airline_colors[i % len(airline_colors)],
+                fillcolor='rgba(255, 255, 255, 0.1)',
+                opacity=0.8,
+                showlegend=False
+            ),
+            row=1, col=1
+        )
+        
+        # Add Scatter plot for individual data points (sampled for performance)
+        sample_data = airline_data.sample(min(100, len(airline_data)))
+        fig_main.add_trace(
+            go.Scatter(
+                x=[airline] * len(sample_data),
+                y=sample_data,
+                mode='markers',
+                name=f"{airline} (Points)",
+                marker=dict(
+                    color=airline_colors[i % len(airline_colors)],
+                    size=4,
+                    opacity=0.4,
+                    line=dict(width=1, color='white')
+                ),
+                showlegend=False
+            ),
+            row=1, col=1
+        )
+        
+        # Add statistical summary annotations
+        mean_price = airline_data.mean()
+        median_price = airline_data.median()
+        std_price = airline_data.std()
+        
+        # Position annotation above the violin plot with improved styling
+        fig_main.add_annotation(
+            x=airline,
+            y=mean_price + std_price * 1.5,
+            text=f"μ: ${mean_price:.0f}<br>σ: ${std_price:.0f}<br>N: {len(airline_data)}",
+            showarrow=False,
+            font=dict(size=10, color=airline_colors[i % len(airline_colors)], family="Arial, sans-serif"),
+            bgcolor='rgba(255, 255, 255, 0.9)',
+            bordercolor=airline_colors[i % len(airline_colors)],
+            borderwidth=2,
+            row=1, col=1
+        )
 
-    # Enhanced Airline Performance Radar Chart (replacing route popularity heatmap)
-    airline_metrics = df.groupby('airline').agg({
-        'price': ['mean', 'std'],
-        'duration': 'mean',
-        'days_left': 'mean'
-    }).round(2)
-    airline_metrics.columns = ['avg_price', 'price_std', 'avg_duration', 'avg_days_left']
-    airline_metrics = airline_metrics.reset_index()
+    # Advanced 3D Scatter Plot: Multi-Dimensional Airline Analysis
+    # Sample data for better performance
+    sample_3d = df.sample(5000)
     
-    # Normalize metrics for radar chart (0-1 scale)
-    for col in ['avg_price', 'price_std', 'avg_duration', 'avg_days_left']:
-        airline_metrics[f'{col}_norm'] = (airline_metrics[col] - airline_metrics[col].min()) / (airline_metrics[col].max() - airline_metrics[col].min())
-    
-    # Select top 6 airlines for better visualization
-    top_airlines = airline_metrics.nlargest(6, 'avg_price')
-    
-    # Create radar chart
-    categories = ['Price', 'Price Stability', 'Duration', 'Advance Booking']
-    
+    # Create 3D scatter plot with multiple dimensions and enhanced tooltips
     fig_main.add_trace(
-        go.Scatterpolar(
-            r=top_airlines['avg_price_norm'].tolist() + [top_airlines['avg_price_norm'].iloc[0]],
-            theta=categories + [categories[0]],
-            fill='toself',
-            name='Airline Performance',
-            line_color='#FF6B6B',
-            fillcolor='rgba(255, 107, 107, 0.3)',
-            hovertemplate='<b>%{text}</b><br>Price: %{r:.2f}<extra></extra>',
-            text=top_airlines['airline'].tolist() + [top_airlines['airline'].iloc[0]]
+        go.Scatter3d(
+            x=sample_3d['duration'],
+            y=sample_3d['days_left'],
+            z=sample_3d['price'],
+            mode='markers',
+            marker=dict(
+                size=sample_3d['price'] / 200 + 2,  # Size based on price
+                color=sample_3d['airline'].astype('category').cat.codes,  # Color by airline
+                colorscale='Viridis',
+                opacity=0.8,
+                showscale=True,
+                colorbar=dict(
+                    title="Airline Categories", 
+                    titlefont=dict(size=14, family="Arial, sans-serif"),
+                    tickfont=dict(size=12, family="Arial, sans-serif"),
+                    x=1.15, 
+                    thickness=20, 
+                    len=0.8
+                )
+            ),
+            text=sample_3d['airline'] + '<br>Class: ' + sample_3d['class'],
+            hovertemplate='<b>%{text}</b><br><br>⏱️ Duration: %{x:.1f} hours<br>📅 Days Left: %{y}<br>💰 Price: $%{z:.0f}<br><br><i>Click and drag to rotate view</i><extra></extra>',
+            name='3D Price-Duration-Days Analysis'
         ),
         row=1, col=2
     )
     
-    # Add individual airline traces
-    for i, airline in enumerate(top_airlines['airline']):
-        airline_data = top_airlines[top_airlines['airline'] == airline].iloc[0]
-        values = [
-            airline_data['avg_price_norm'],
-            airline_data['price_std_norm'],
-            airline_data['avg_duration_norm'],
-            airline_data['avg_days_left_norm']
-        ]
-        values.append(values[0])  # Close the polygon
-        
-        # Convert hex to rgba for transparency
-        hex_color = airline_colors[i % len(airline_colors)]
-        rgba_color = f'rgba({int(hex_color[1:3], 16)}, {int(hex_color[3:5], 16)}, {int(hex_color[5:7], 16)}, 0.1)'
-        
-        fig_main.add_trace(
-            go.Scatterpolar(
-                r=values,
-                theta=categories + [categories[0]],
-                fill='toself',
-                name=airline,
-                line_color=hex_color,
-                fillcolor=rgba_color,
-                hovertemplate=f'<b>{airline}</b><br>Price: {airline_data["avg_price"]:.0f}$<br>Duration: {airline_data["avg_duration"]:.1f}h<br>Advance: {airline_data["avg_days_left"]:.0f} days<extra></extra>',
-                showlegend=False
-            ),
-            row=1, col=2
-        )
 
-    # Enhanced price vs duration with better styling
-    sample_df = df.sample(3000)
-    fig_main.add_trace(
-        go.Scatter(
-            x=sample_df['duration'], 
-            y=sample_df['price'], 
-            mode='markers',
-            marker=dict(
-                size=4, 
-                opacity=0.6, 
-                color=sample_df['days_left'], 
-                colorscale='Plasma',
-                showscale=True,
-                colorbar=dict(title="Days Left")
-            ),
-            name='Price vs Duration'
-        ),
-        row=2, col=1
-    )
 
-    # Enhanced market share pie chart
+
+
+    # Enhanced market share pie chart with improved tooltips
     market_share = df['airline'].value_counts()
     fig_main.add_trace(
         go.Pie(
@@ -239,24 +255,57 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
             hole=0.4, 
             textinfo='label+percent',
             marker_colors=airline_colors[:len(market_share)],
-            textfont_size=14
+            textfont_size=14,
+            hovertemplate='<b>✈️ %{label}</b><br><br>📊 Market Share: %{percent:.1%}<br>✈️ Total Flights: %{value}<br>💰 Avg Price: $%{customdata:.0f}<br><br><i>Click to highlight airline</i><extra></extra>',
+            customdata=df.groupby('airline')['price'].mean().reindex(market_share.index)
         ),
         row=2, col=2
     )
 
-    # Enhanced booking patterns with gradient colors
-    days_bins = pd.cut(df['days_left'], bins=[0, 7, 14, 30, 49], labels=['1-7', '8-14', '15-30', '31-49'])
-    booking_patterns = df.groupby(days_bins)['price'].mean()
+    # Enhanced price vs duration with days left integration
+    sample_df = df.sample(3000)
+    
+    # Create enhanced scatter plot with days left as color and size
     fig_main.add_trace(
-        go.Bar(
-            x=booking_patterns.index.astype(str), 
-            y=booking_patterns.values,
-            name='Booking Patterns', 
-            marker_color='#FF6B6B',
-            marker_line_color='#FF4757',
-            marker_line_width=2
+        go.Scatter(
+            x=sample_df['duration'], 
+            y=sample_df['price'],
+            mode='markers',
+            marker=dict(
+                size=sample_df['days_left'] / 5 + 3,  # Size based on days left
+                color=sample_df['days_left'],
+                colorscale='Plasma',
+                showscale=True,
+                colorbar=dict(
+                    title="Days Left",
+                    titlefont=dict(size=14, family="Arial, sans-serif"),
+                    tickfont=dict(size=12, family="Arial, sans-serif"),
+                    x=1.15,
+                    thickness=20,
+                    len=0.8
+                ),
+                opacity=0.7
+            ),
+            text=sample_df['airline'] + '<br>Days Left: ' + sample_df['days_left'].astype(str),
+            hovertemplate='<b>✈️ %{text}</b><br><br>⏱️ Duration: %{x:.1f} hours<br>💰 Price: $%{y:.0f}<br>📅 Days Left: %{marker.size}<br><br><i>Size indicates days until departure</i><extra></extra>',
+            name='Price vs Duration + Days Left'
         ),
-        row=3, col=1
+        row=2, col=1
+    )
+    
+    # Add trend line for price vs duration
+    z = np.polyfit(sample_df['duration'], sample_df['price'], 1)
+    p = np.poly1d(z)
+    fig_main.add_trace(
+        go.Scatter(
+            x=sample_df['duration'],
+            y=p(sample_df['duration']),
+            mode='lines',
+            line=dict(color='#FF6B6B', width=3, dash='dash'),
+            name='Trend Line',
+            showlegend=False
+        ),
+        row=2, col=1
     )
 
     # Enhanced price by stops with custom colors
@@ -272,21 +321,192 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
                 fillcolor=route_colors[i % len(route_colors)],
                 opacity=0.7
             ),
-            row=3, col=2
-        )
-
-    # Enhanced layout
+                    row=3, col=2
+    )
+    
+    # Route Popularity Analysis (Row 3, Col 1) with enhanced styling
+    route_popularity = df.groupby(['source_city', 'destination_city']).size().reset_index(name='count')
+    route_popularity = route_popularity.sort_values('count', ascending=False).head(15)
+    
+    fig_main.add_trace(
+        go.Bar(
+            x=route_popularity['source_city'] + ' → ' + route_popularity['destination_city'],
+            y=route_popularity['count'],
+            name='Route Popularity',
+            marker_color='#4ECDC4',
+            marker_line_color='#26A69A',
+            marker_line_width=2,
+            customdata=route_popularity['count'] / route_popularity['count'].sum() * 100,  # For percentage calculation
+            hovertemplate='<b>🌍 Route: %{x}</b><br><br>✈️ Total Flights: %{y}<br>📊 Market Share: %{customdata:.1f}%<br><br><i>Most popular routes in the dataset</i><extra></extra>'
+        ),
+        row=3, col=1
+    )
+    
+    # Enhanced layout with improved typography, spacing, and positioning
     fig_main.update_layout(
-        height=1400,
+        height=1400,  # Reduced height for more compact layout
         title_text="🚀 Enhanced Airlines Data Analysis Dashboard",
         template='plotly_white',
         showlegend=True,
-        title_font_size=28,
-        title_font_color='#2c3e50',
-        font=dict(size=14),
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        margin=dict(t=100, b=50, l=50, r=50)
+        title_font_size=24,  # Slightly smaller title
+        title_font_color='#1a1a1a',  # Darker title for better contrast
+        font=dict(
+            size=12,  # Reduced base font size for compactness
+            family="Arial, sans-serif"  # Professional font family
+        ),
+        paper_bgcolor='rgba(248, 249, 250, 0.95)',  # Light gray background
+        plot_bgcolor='rgba(255, 255, 255, 0.9)',  # Semi-transparent white
+        margin=dict(
+            t=80,   # Reduced top margin
+            b=40,   # Reduced bottom margin
+            l=40,   # Reduced left margin
+            r=40    # Reduced right margin
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(size=10),  # Smaller legend font
+            bgcolor='rgba(255, 255, 255, 0.8)',  # Semi-transparent background
+            bordercolor='rgba(0, 0, 0, 0.1)',    # Subtle border
+            borderwidth=1
+        ),
+    )
+    
+    # Update axis styling for better readability
+    fig_main.update_xaxes(
+        title_font=dict(size=16, family="Arial, sans-serif"),
+        tickfont=dict(size=12, family="Arial, sans-serif"),
+        showgrid=True,
+        gridwidth=1,
+        gridcolor='rgba(0, 0, 0, 0.1)',
+        zeroline=True,
+        zerolinewidth=2,
+        zerolinecolor='rgba(0, 0, 0, 0.2)'
+    )
+    
+    fig_main.update_yaxes(
+        title_font=dict(size=16, family="Arial, sans-serif"),
+        tickfont=dict(size=12, family="Arial, sans-serif"),
+        showgrid=True,
+        gridwidth=1,
+        gridcolor='rgba(0, 0, 0, 0.1)',
+        zeroline=True,
+        zerolinewidth=2,
+        zerolinecolor='rgba(0, 0, 0, 0.2)'
+    )
+    
+    # 4. NEW PRICE ANALYSIS GRAPHS - Row 4 & 5
+    print("💰 Creating Additional Price Analysis Graphs...")
+    
+    # Row 4, Col 1: Price Distribution by Class (Violin Plot)
+    for i, class_type in enumerate(df['class'].unique()):
+        class_data = df[df['class'] == class_type]['price']
+        fig_main.add_trace(
+            go.Violin(
+                y=class_data,
+                name=f"{class_type}",
+                box_visible=True,
+                meanline_visible=True,
+                line_color=airline_colors[i % len(airline_colors)],
+                fillcolor=airline_colors[i % len(airline_colors)],
+                opacity=0.7,
+                showlegend=False
+            ),
+            row=4, col=1
+        )
+    
+    # Row 4, Col 2: Price Trends by Departure Time (Scatter Plot)
+    time_price_data = df.groupby('departure_time')['price'].agg(['mean', 'count']).reset_index()
+    time_price_data = time_price_data[time_price_data['count'] > 10]  # Filter for meaningful data
+    
+    fig_main.add_trace(
+        go.Scatter(
+            x=time_price_data['departure_time'],
+            y=time_price_data['mean'],
+            mode='markers+lines',
+            name='Average Price by Time',
+            marker=dict(
+                size=time_price_data['count'] / 50 + 5,  # Size based on flight count
+                color=time_price_data['mean'],
+                colorscale='Viridis',
+                showscale=True,
+                colorbar=dict(
+                    title="Price ($)",
+                    titlefont=dict(size=14, family="Arial, sans-serif"),
+                    tickfont=dict(size=12, family="Arial, sans-serif"),
+                    x=1.15,
+                    thickness=20,
+                    len=0.8
+                )
+            ),
+            line=dict(color='#FF6B6B', width=3),
+            text=time_price_data['departure_time'] + '<br>Flights: ' + time_price_data['count'].astype(str),
+            hovertemplate='<b>🕐 %{text}</b><br><br>💰 Average Price: $%{y:.0f}<br>✈️ Flight Count: %{marker.size}<br><br><i>Size indicates number of flights</i><extra></extra>'
+        ),
+        row=4, col=2
+    )
+    
+    # Row 5, Col 1: Price vs Distance Analysis (Scatter Plot)
+    # Create a simple distance proxy based on duration
+    df['distance_proxy'] = df['duration'] * 800  # Rough km estimate
+    
+    sample_distance = df.sample(3000)
+    fig_main.add_trace(
+        go.Scatter(
+            x=sample_distance['distance_proxy'],
+            y=sample_distance['price'],
+            mode='markers',
+            name='Price vs Distance',
+            marker=dict(
+                size=sample_distance['days_left'] / 10 + 3,  # Size based on days left
+                color=sample_distance['airline'].astype('category').cat.codes,
+                colorscale='Plasma',
+                opacity=0.7,
+                showscale=True,
+                colorbar=dict(
+                    title="Airline",
+                    titlefont=dict(size=14, family="Arial, sans-serif"),
+                    tickfont=dict(size=12, family="Arial, sans-serif"),
+                    x=1.15,
+                    thickness=20,
+                    len=0.8
+                )
+            ),
+            text=sample_distance['airline'] + '<br>Class: ' + sample_distance['class'],
+            hovertemplate='<b>✈️ %{text}</b><br><br>🌍 Distance: %{x:.0f} km<br>💰 Price: $%{y:.0f}<br>📅 Days Left: %{marker.size}<br><br><i>Size indicates days until departure</i><extra></extra>'
+        ),
+        row=5, col=1
+    )
+    
+    # Row 5, Col 2: Price Statistics by Airline (Bar Chart)
+    airline_price_stats = df.groupby('airline').agg({
+        'price': ['mean', 'median', 'std', 'count']
+    }).reset_index()
+    airline_price_stats.columns = ['airline', 'avg_price', 'median_price', 'price_std', 'flight_count']
+    airline_price_stats = airline_price_stats.sort_values('avg_price', ascending=False)
+    
+    fig_main.add_trace(
+        go.Bar(
+            x=airline_price_stats['airline'],
+            y=airline_price_stats['avg_price'],
+            name='Average Price by Airline',
+            marker_color='#4ECDC4',
+            marker_line_color='#26A69A',
+            marker_line_width=2,
+            text=airline_price_stats['avg_price'].round(0),
+            textposition='outside',
+            textfont=dict(size=12, family="Arial, sans-serif"),
+            hovertemplate='<b>✈️ %{x}</b><br><br>💰 Average Price: $%{y:.0f}<br>📊 Median Price: $%{customdata[0]:.0f}<br>📈 Price Std: $%{customdata[1]:.0f}<br>✈️ Flights: %{customdata[2]}<br><br><i>Click to highlight airline</i><extra></extra>',
+            customdata=np.column_stack([
+                airline_price_stats['median_price'],
+                airline_price_stats['price_std'],
+                airline_price_stats['flight_count']
+            ])
+        ),
+        row=5, col=2
     )
 
     # 2. Enhanced price analysis with 3D visualization
@@ -322,8 +542,9 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
                 eye=dict(x=1.5, y=1.5, z=1.5)
             )
         ),
-        height=600,
-        template='plotly_white'
+        height=350,
+        template='plotly_white',
+        margin=dict(l=60, r=60, t=80, b=60)
     )
 
     # Enhanced box plot
@@ -335,9 +556,168 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
     )
     fig_price.update_layout(
         template='plotly_white', 
-        title_font_size=22,
+        title_font_size=20,
         title_font_color='#2c3e50',
-        font=dict(size=14)
+        font=dict(size=12),
+        margin=dict(l=60, r=60, t=80, b=60),
+        height=350
+    )
+    
+    # Advanced Price Analysis: Additional Sophisticated Visualizations
+    print("🔬 Creating Advanced Price Analysis Visualizations...")
+    
+    # 1. Price Distribution by Stops with Violin + Box Plot
+    fig_price_stops = go.Figure()
+    
+    for i, stops in enumerate(sorted(df['stops'].unique())):
+        stops_data = df[df['stops'] == stops]['price']
+        
+        # Add Violin plot
+        fig_price_stops.add_trace(go.Violin(
+            y=stops_data,
+            name=f"{stops} Stops",
+            box_visible=True,
+            meanline_visible=True,
+            line_color=airline_colors[i % len(airline_colors)],
+            fillcolor=airline_colors[i % len(airline_colors)],
+            opacity=0.7
+        ))
+    
+    fig_price_stops.update_layout(
+        title='🎯 Price Distribution by Number of Stops',
+        yaxis_title='Price ($)',
+        xaxis_title='Number of Stops',
+        template='plotly_white',
+        height=350,
+        showlegend=True,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        margin=dict(l=60, r=60, t=80, b=60),
+        legend=dict(x=0.98, y=0.98, xanchor='right', yanchor='top')
+    )
+    
+    # 2. Price Heatmap: Airline vs Class vs Average Price
+    price_heatmap_data = df.groupby(['airline', 'class'])['price'].mean().unstack(fill_value=0)
+    
+    fig_price_heatmap = go.Figure(data=go.Heatmap(
+        z=price_heatmap_data.values,
+        x=price_heatmap_data.columns,
+        y=price_heatmap_data.index,
+        colorscale='Viridis',
+        text=price_heatmap_data.values.round(0),
+        texttemplate='$%{text:.0f}',
+        textfont=dict(size=14, color='white'),
+        hovertemplate='<b>✈️ %{y}</b><br><b>💺 %{x}</b><br><b>💰 Average Price: $%{z:.0f}</b><extra></extra>'
+    ))
+    
+    fig_price_heatmap.update_layout(
+        title='🔥 Price Heatmap: Airline vs Class',
+        xaxis_title='Class',
+        yaxis_title='Airline',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
+    
+    # 3. Price vs Duration Scatter with Trend Lines
+    sample_scatter = df.sample(8000)
+    
+    fig_price_duration = go.Figure()
+    
+    # Add scatter plot
+    fig_price_duration.add_trace(go.Scatter(
+        x=sample_scatter['duration'],
+        y=sample_scatter['price'],
+        mode='markers',
+        name='Flight Data',
+        marker=dict(
+            size=6,
+            color=sample_scatter['price'],
+            colorscale='Plasma',
+            opacity=0.6,
+            showscale=True,
+            colorbar=dict(
+                title="Price ($)",
+                titlefont=dict(size=14),
+                tickfont=dict(size=12),
+                x=1.15,
+                thickness=20
+            )
+        ),
+        text=sample_scatter['airline'] + '<br>Class: ' + sample_scatter['class'],
+        hovertemplate='<b>✈️ %{text}</b><br><br>⏱️ Duration: %{x:.1f} hours<br>💰 Price: $%{y:.0f}<extra></extra>'
+    ))
+    
+    # Add trend line
+    z = np.polyfit(sample_scatter['duration'], sample_scatter['price'], 2)
+    p = np.poly1d(z)
+    x_trend = np.linspace(sample_scatter['duration'].min(), sample_scatter['duration'].max(), 100)
+    y_trend = p(x_trend)
+    
+    fig_price_duration.add_trace(go.Scatter(
+        x=x_trend,
+        y=y_trend,
+        mode='lines',
+        name='Trend Line (Polynomial)',
+        line=dict(color='red', width=3, dash='dash'),
+        showlegend=True
+    ))
+    
+    fig_price_duration.update_layout(
+        title='📈 Price vs Duration Analysis with Trend Line',
+        xaxis_title='Duration (hours)',
+        yaxis_title='Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        margin=dict(l=60, r=80, t=80, b=60),
+        coloraxis_colorbar=dict(x=1.02, thickness=20)
+    )
+    
+    # 4. Price Distribution by Days Left (Histogram + KDE)
+    fig_price_days = go.Figure()
+    
+    # Create histogram
+    fig_price_days.add_trace(go.Histogram(
+        x=df['days_left'],
+        y=df['price'],
+        histfunc='avg',
+        nbinsx=20,
+        name='Average Price by Days Left',
+        marker_color='#4ECDC4',
+        opacity=0.7,
+        hovertemplate='<b>📅 Days Left: %{x}</b><br><b>💰 Average Price: $%{y:.0f}</b><extra></extra>'
+    ))
+    
+    # Add KDE-like smoothing
+    days_bins = pd.cut(df['days_left'], bins=20)
+    price_by_days = df.groupby(days_bins)['price'].mean().reset_index()
+    price_by_days['days_mid'] = price_by_days['days_left'].apply(lambda x: x.mid)
+    
+    fig_price_days.add_trace(go.Scatter(
+        x=price_by_days['days_mid'],
+        y=price_by_days['price'],
+        mode='lines+markers',
+        name='Price Trend',
+        line=dict(color='#FF6B6B', width=3),
+        marker=dict(size=6, color='#FF6B6B'),
+        hovertemplate='<b>📅 Days Left: %{x:.0f}</b><br><b>💰 Average Price: $%{y:.0f}</b><extra></extra>'
+    ))
+    
+    fig_price_days.update_layout(
+        title='📊 Price Distribution by Days Until Departure',
+        xaxis_title='Days Left',
+        yaxis_title='Average Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        barmode='overlay',
+        margin=dict(l=60, r=60, t=80, b=60),
+        legend=dict(x=0.98, y=0.98, xanchor='right', yanchor='top')
     )
 
     # 3. Enhanced route analysis with bubble chart
@@ -363,34 +743,42 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
     )
     fig_route_bubble.update_layout(
         template='plotly_white',
-        title_font_size=22,
-        title_font_color='#2c3e50'
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        height=350,
+        margin=dict(l=60, r=60, t=80, b=60)
     )
 
-    # Enhanced route sunburst chart (much more attractive than heatmap)
-    route_sunburst = df.groupby(['source_city', 'destination_city']).size().reset_index(name='flight_count')
-    route_sunburst['route'] = route_sunburst['source_city'] + ' → ' + route_sunburst['destination_city']
+    # Route Popularity Bar Chart (replacing problematic sunburst)
+    route_popularity = df.groupby(['source_city', 'destination_city']).size().reset_index(name='flight_count')
+    route_popularity = route_popularity.sort_values('flight_count', ascending=False).head(20)
+    route_popularity['route'] = route_popularity['source_city'] + ' → ' + route_popularity['destination_city']
     
-    fig_route = go.Figure(go.Sunburst(
-        labels=['All Routes'] + route_sunburst['source_city'].unique().tolist() + route_sunburst['route'].tolist(),
-        parents=[''] + ['All Routes'] * len(route_sunburst['source_city'].unique()) + route_sunburst['source_city'].tolist(),
-        values=[0] + [0] * len(route_sunburst['source_city'].unique()) + route_sunburst['flight_count'].tolist(),
-        branchvalues='total',
-        textinfo='label+value',
-        textfont_size=12,
-        marker=dict(
-            colors=route_colors * (len(route_sunburst) // len(route_colors) + 1),
-            line=dict(width=2, color='white')
-        ),
-        hovertemplate='<b>%{label}</b><br>Flights: %{value}<extra></extra>'
-    ))
+    fig_route = go.Figure(data=[
+        go.Bar(
+            x=route_popularity['route'],
+            y=route_popularity['flight_count'],
+            marker_color='#4ECDC4',
+            marker_line_color='#26A69A',
+            marker_line_width=2,
+            text=route_popularity['flight_count'],
+            textposition='outside',
+            textfont=dict(size=10),
+            hovertemplate='<b>🌍 Route: %{x}</b><br><br>✈️ Flight Count: %{y}<br>📊 Rank: %{customdata}<extra></extra>',
+            customdata=[i+1 for i in range(len(route_popularity))]
+        )
+    ])
     
     fig_route.update_layout(
-        title='Route Popularity Sunburst Chart',
-        title_font_size=22,
-        title_font_color='#2c3e50',
+        title='🌍 Top 20 Route Popularity',
+        xaxis_title='Route',
+        yaxis_title='Number of Flights',
         template='plotly_white',
-        height=600
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        xaxis=dict(tickangle=45),
+        margin=dict(l=60, r=60, t=80, b=80)
     )
     
     # Add a beautiful network graph for top routes
@@ -464,16 +852,126 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
     fig_network = go.Figure(data=[edge_trace, node_trace],
                            layout=go.Layout(
                                title='Top Routes Network Graph',
-                               titlefont_size=22,
+                               titlefont_size=18,
                                title_font_color='#2c3e50',
                                showlegend=False,
                                hovermode='closest',
-                               margin=dict(b=20,l=5,r=5,t=40),
+                               margin=dict(b=60,l=60,r=60,t=80),
                                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                                template='plotly_white',
-                               height=500
+                               height=350
                            ))
+    
+    # Additional Enhanced Route Analysis Charts
+    print("🗺️ Creating Additional Route Analysis Charts...")
+    
+    # 1. Route Price Distribution by Airline
+    route_airline_price = df.groupby(['source_city', 'destination_city', 'airline'])['price'].agg(['mean', 'count']).reset_index()
+    route_airline_price = route_airline_price[route_airline_price['count'] > 5]  # Filter for meaningful data
+    
+    fig_route_airline = go.Figure()
+    
+    for airline in route_airline_price['airline'].unique():
+        airline_data = route_airline_price[route_airline_price['airline'] == airline]
+        fig_route_airline.add_trace(go.Scatter(
+            x=airline_data['source_city'] + ' → ' + airline_data['destination_city'],
+            y=airline_data['mean'],
+            mode='markers',
+            name=airline,
+            marker=dict(
+                size=airline_data['count'] / 2 + 5,
+                opacity=0.7
+            ),
+            text=airline_data['airline'] + '<br>Flights: ' + airline_data['count'].astype(str),
+            hovertemplate='<b>✈️ %{text}</b><br><br>🌍 Route: %{x}<br>💰 Average Price: $%{y:.0f}<br>✈️ Flight Count: %{marker.size}<br><br><i>Size indicates number of flights</i><extra></extra>'
+        ))
+    
+    fig_route_airline.update_layout(
+        title='✈️ Route Price Analysis by Airline',
+        xaxis_title='Route',
+        yaxis_title='Average Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        xaxis=dict(tickangle=45),
+        margin=dict(l=60, r=60, t=80, b=80)
+    )
+    
+    # 2. Route Efficiency Analysis (Price per Hour)
+    route_efficiency = df.groupby(['source_city', 'destination_city']).agg({
+        'price': 'mean',
+        'duration': 'mean'
+    }).reset_index()
+    route_efficiency['flight_count'] = df.groupby(['source_city', 'destination_city']).size().reset_index(name='count')['count']
+    route_efficiency['price_per_hour'] = route_efficiency['price'] / route_efficiency['duration']
+    route_efficiency = route_efficiency.sort_values('price_per_hour', ascending=False).head(20)
+    
+    fig_route_efficiency = go.Figure(data=[
+        go.Bar(
+            x=route_efficiency['source_city'] + ' → ' + route_efficiency['destination_city'],
+            y=route_efficiency['price_per_hour'],
+            marker_color='#FF6B6B',
+            marker_line_color='#E53E3E',
+            marker_line_width=2,
+            text=route_efficiency['price_per_hour'].round(2),
+            textposition='outside',
+            textfont=dict(size=10),
+            hovertemplate='<b>🌍 Route: %{x}</b><br><br>💰 Price/Hour: $%{y:.2f}<br>⏱️ Duration: %{customdata[0]:.1f}h<br>✈️ Flights: %{customdata[1]}<extra></extra>',
+            customdata=np.column_stack([route_efficiency['duration'], route_efficiency['flight_count']])
+        )
+    ])
+    
+    fig_route_efficiency.update_layout(
+        title='⚡ Route Efficiency: Price per Hour Analysis',
+        xaxis_title='Route',
+        yaxis_title='Price per Hour ($/h)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        xaxis=dict(tickangle=45),
+        margin=dict(l=60, r=60, t=80, b=80)
+    )
+    
+    # 3. Route Popularity Treemap (Removed to reduce to 6 charts)
+    
+    # 4. Route Price Range Analysis (Box Plot)
+    route_price_ranges = df.groupby(['source_city', 'destination_city'])['price'].agg(['mean', 'std', 'min', 'max', 'count']).reset_index()
+    route_price_ranges = route_price_ranges[route_price_ranges['count'] > 10]  # Filter for routes with sufficient data
+    route_price_ranges = route_price_ranges.sort_values('mean', ascending=False).head(15)
+    
+    fig_route_price_ranges = go.Figure()
+    
+    for _, route in route_price_ranges.iterrows():
+        route_data = df[(df['source_city'] == route['source_city']) & 
+                       (df['destination_city'] == route['destination_city'])]['price']
+        
+        fig_route_price_ranges.add_trace(go.Box(
+            y=route_data,
+            name=route['source_city'] + ' → ' + route['destination_city'],
+            boxpoints='outliers',
+            marker_color='#4ECDC4',
+            line_color='#26A69A',
+            hovertemplate='<b>🌍 Route: %{fullData.name}</b><br><br>💰 Price: $%{y}<br>📊 Mean: $%{customdata[0]:.0f}<br>📈 Std: $%{customdata[1]:.0f}<br>✈️ Flights: %{customdata[2]}<extra></extra>',
+            customdata=np.column_stack([
+                [route['mean']] * len(route_data),
+                [route['std']] * len(route_data),
+                [route['count']] * len(route_data)
+            ])
+        ))
+    
+    fig_route_price_ranges.update_layout(
+        title='📊 Route Price Distribution Analysis',
+        yaxis_title='Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        showlegend=False,
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
 
     # 4. Enhanced time analysis with area charts
     print("⏰ Creating Enhanced Time Analysis...")
@@ -491,8 +989,162 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
     )
     fig_time_area.update_layout(
         template='plotly_white', 
-        title_font_size=22,
-        title_font_color='#2c3e50'
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        height=350,
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
+    
+    # Additional Time Analysis Charts
+    print("⏰ Creating Additional Time Analysis Charts...")
+    
+    # 1. Price Trends by Days Left (Line Chart)
+    days_price_trend = df.groupby('days_left')['price'].agg(['mean', 'std']).reset_index()
+    days_price_trend = days_price_trend[days_price_trend['days_left'] <= 30]  # Focus on last 30 days
+    
+    fig_days_price_trend = go.Figure()
+    
+    fig_days_price_trend.add_trace(go.Scatter(
+        x=days_price_trend['days_left'],
+        y=days_price_trend['mean'],
+        mode='lines+markers',
+        name='Average Price',
+        line=dict(color='#667eea', width=3),
+        marker=dict(size=6, color='#667eea'),
+        hovertemplate='<b>📅 Days Left: %{x}</b><br><br>💰 Average Price: $%{y:.0f}<br>📊 Std Dev: $%{customdata[0]:.0f}<extra></extra>',
+        customdata=days_price_trend['std']
+    ))
+    
+    # Add confidence interval
+    fig_days_price_trend.add_trace(go.Scatter(
+        x=days_price_trend['days_left'],
+        y=days_price_trend['mean'] + days_price_trend['std'],
+        mode='lines',
+        line=dict(width=0),
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+    
+    fig_days_price_trend.add_trace(go.Scatter(
+        x=days_price_trend['days_left'],
+        y=days_price_trend['mean'] - days_price_trend['std'],
+        mode='lines',
+        line=dict(width=0),
+        fill='tonexty',
+        fillcolor='rgba(102, 126, 234, 0.2)',
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+    
+    fig_days_price_trend.update_layout(
+        title='📈 Price Trends by Days Until Departure',
+        xaxis_title='Days Left',
+        yaxis_title='Average Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
+    
+    # 2. Departure Time Distribution (Histogram)
+    fig_departure_dist = go.Figure()
+    
+    fig_departure_dist.add_trace(go.Histogram(
+        x=df['departure_time'],
+        nbinsx=12,
+        marker_color='#4ECDC4',
+        opacity=0.7,
+        hovertemplate='<b>🕐 Departure Time: %{x}</b><br><br>✈️ Number of Flights: %{y}<extra></extra>'
+    ))
+    
+    fig_departure_dist.update_layout(
+        title='🕐 Flight Distribution by Departure Time',
+        xaxis_title='Departure Time',
+        yaxis_title='Number of Flights',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
+    
+    # 3. Price vs Duration by Time of Day (Scatter)
+    sample_time_scatter = df.sample(min(5000, len(df)))
+    
+    fig_time_scatter = go.Figure()
+    
+    for time_slot in ['Morning', 'Afternoon', 'Evening', 'Night']:
+        if time_slot == 'Morning':
+            time_data = sample_time_scatter[sample_time_scatter['departure_time'].isin(['6AM-12PM'])]
+            color = '#FFD93D'
+        elif time_slot == 'Afternoon':
+            time_data = sample_time_scatter[sample_time_scatter['departure_time'].isin(['12PM-6PM'])]
+            color = '#FF6B6B'
+        elif time_slot == 'Evening':
+            time_data = sample_time_scatter[sample_time_scatter['departure_time'].isin(['6PM-12AM'])]
+            color = '#4ECDC4'
+        else:  # Night
+            time_data = sample_time_scatter[sample_time_scatter['departure_time'].isin(['12AM-6AM'])]
+            color = '#6C5CE7'
+        
+        if len(time_data) > 0:
+            fig_time_scatter.add_trace(go.Scatter(
+                x=time_data['duration'],
+                y=time_data['price'],
+                mode='markers',
+                name=time_slot,
+                marker=dict(
+                    size=6,
+                    color=color,
+                    opacity=0.6
+                ),
+                hovertemplate='<b>%{fullData.name}</b><br><br>⏱️ Duration: %{x:.1f}h<br>💰 Price: $%{y:.0f}<extra></extra>'
+            ))
+    
+    fig_time_scatter.update_layout(
+        title='🌅 Price vs Duration by Time of Day',
+        xaxis_title='Duration (hours)',
+        yaxis_title='Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
+    
+    # 4. Monthly Price Patterns by Days Left (Box Plot)
+    # Create monthly buckets based on days left
+    df['month_bucket'] = pd.cut(df['days_left'], bins=[0, 7, 15, 30, 60, 90, 120, 150, 180, 365], 
+                                labels=['1 Week', '2 Weeks', '1 Month', '2 Months', '3 Months', '4 Months', '5 Months', '6 Months', '1 Year'])
+    
+    monthly_price = df.groupby('month_bucket')['price'].apply(list).reset_index()
+    monthly_price = monthly_price.dropna()
+    
+    fig_weekly_price = go.Figure()
+    
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#FFB6C1', '#20B2AA']
+    
+    for i, month in enumerate(monthly_price['month_bucket']):
+        if pd.notna(month):
+            month_data = monthly_price[monthly_price['month_bucket'] == month]['price'].iloc[0]
+            fig_weekly_price.add_trace(go.Box(
+                y=month_data,
+                name=str(month),
+                marker_color=colors[i % len(colors)],
+                boxpoints='outliers',
+                hovertemplate='<b>📅 %{fullData.name}</b><br><br>💰 Price: $%{y}<extra></extra>'
+            ))
+    
+    fig_weekly_price.update_layout(
+        title='📅 Price Patterns by Booking Time (Days Left)',
+        yaxis_title='Price ($)',
+        template='plotly_white',
+        height=350,
+        title_font_size=18,
+        title_font_color='#2c3e50',
+        xaxis=dict(tickangle=45),
+        margin=dict(l=60, r=60, t=80, b=60)
     )
 
     # 5. ML Model Performance Dashboard
@@ -547,7 +1199,10 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
     )
 
     return (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, fig_network,
-            fig_time_area, fig_ml_performance, fig_demand)
+            fig_time_area, fig_ml_performance, fig_demand, fig_price_stops, 
+            fig_price_heatmap, fig_price_duration, fig_price_days, fig_route_airline,
+            fig_route_efficiency, fig_route_price_ranges, fig_days_price_trend,
+            fig_departure_dist, fig_time_scatter, fig_weekly_price)
 
 def create_price_predictor_widget():
     """Create HTML for interactive price prediction widget."""
@@ -657,7 +1312,10 @@ def main():
 
     # Create enhanced visualizations
     (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, fig_network,
-     fig_time_area, fig_ml_performance, fig_demand) = create_enhanced_visualizations(df, model_results, demand_model, demand_mae, demand_r2)
+     fig_time_area, fig_ml_performance, fig_demand, fig_price_stops, 
+     fig_price_heatmap, fig_price_duration, fig_price_days, fig_route_airline,
+     fig_route_efficiency, fig_route_price_ranges, fig_days_price_trend,
+     fig_departure_dist, fig_time_scatter, fig_weekly_price) = create_enhanced_visualizations(df, model_results, demand_model, demand_mae, demand_r2)
 
     # Convert figures to embeddable HTML fragments
     main_fig_html = pio.to_html(fig_main, include_plotlyjs='cdn', full_html=False)
@@ -665,9 +1323,27 @@ def main():
     price_fig_html = pio.to_html(fig_price, include_plotlyjs=False, full_html=False)
     route_bubble_html = pio.to_html(fig_route_bubble, include_plotlyjs=False, full_html=False)
     route_fig_html = pio.to_html(fig_route, include_plotlyjs=False, full_html=False)
+    fig_network_html = pio.to_html(fig_network, include_plotlyjs=False, full_html=False)
     time_area_html = pio.to_html(fig_time_area, include_plotlyjs=False, full_html=False)
     ml_performance_html = pio.to_html(fig_ml_performance, include_plotlyjs=False, full_html=False)
     demand_html = pio.to_html(fig_demand, include_plotlyjs=False, full_html=False)
+    
+    # Convert new Advanced Price Analysis figures to HTML
+    price_stops_html = pio.to_html(fig_price_stops, include_plotlyjs=False, full_html=False)
+    price_heatmap_html = pio.to_html(fig_price_heatmap, include_plotlyjs=False, full_html=False)
+    price_duration_html = pio.to_html(fig_price_duration, include_plotlyjs=False, full_html=False)
+    price_days_html = pio.to_html(fig_price_days, include_plotlyjs=False, full_html=False)
+    
+    # Convert new Enhanced Route Analysis figures to HTML
+    route_airline_html = pio.to_html(fig_route_airline, include_plotlyjs=False, full_html=False)
+    route_efficiency_html = pio.to_html(fig_route_efficiency, include_plotlyjs=False, full_html=False)
+    route_price_ranges_html = pio.to_html(fig_route_price_ranges, include_plotlyjs=False, full_html=False)
+    
+    # Convert new Enhanced Time Analysis figures to HTML
+    days_price_trend_html = pio.to_html(fig_days_price_trend, include_plotlyjs=False, full_html=False)
+    departure_dist_html = pio.to_html(fig_departure_dist, include_plotlyjs=False, full_html=False)
+    time_scatter_html = pio.to_html(fig_time_scatter, include_plotlyjs=False, full_html=False)
+    weekly_price_html = pio.to_html(fig_weekly_price, include_plotlyjs=False, full_html=False)
 
     # Create price prediction widget
     prediction_widget = create_price_predictor_widget()
@@ -863,6 +1539,148 @@ def main():
             min-height: 60px;
         }}
         
+        /* Price Analysis Grid Styling */
+        .price-analysis-grid {{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 15px;
+        }}
+        
+        .price-chart {{
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }}
+        
+        .price-chart:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+        }}
+        
+        .price-chart h4 {{
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }}
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 1400px) {{
+            .price-analysis-grid {{
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }}
+        }}
+        @media (max-width: 900px) {{
+            .price-analysis-grid {{
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }}
+        }}
+        
+        /* Route Analysis Grid Styling */
+        .route-analysis-grid {{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 15px;
+        }}
+        
+        .route-chart {{
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }}
+        
+        .route-chart:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+        }}
+        
+        .route-chart h4 {{
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }}
+        
+        /* Responsive design for route analysis */
+        @media (max-width: 1400px) {{
+            .route-analysis-grid {{
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }}
+        }}
+        @media (max-width: 900px) {{
+            .route-analysis-grid {{
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }}
+        }}
+        
+        /* Time Analysis Grid Styling */
+        .time-analysis-grid {{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 15px;
+        }}
+        
+        .time-chart {{
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }}
+        
+        .time-chart:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+        }}
+        
+        .time-chart h4 {{
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }}
+        
+        /* Responsive design for time analysis */
+        @media (max-width: 1400px) {{
+            .time-analysis-grid {{
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }}
+        }}
+        
+        @media (max-width: 900px) {{
+            .time-analysis-grid {{
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }}
+        }}
+        
         .stats-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -930,24 +1748,96 @@ def main():
     <div id="pricing" class="section">
         <div class="dashboard-card">
             <div class="card-header">💰 Advanced Price Analysis</div>
-            {fig_3d_html}
-            {price_fig_html}
+            <div class="price-analysis-grid">
+                <div class="price-chart">
+                    <h4>🚀 3D Price Analysis</h4>
+                    {fig_3d_html}
+                </div>
+                <div class="price-chart">
+                    <h4>📊 Price by Airline & Class</h4>
+                    {price_fig_html}
+                </div>
+                <div class="price-chart">
+                    <h4>🎯 Price by Number of Stops</h4>
+                    {price_stops_html}
+                </div>
+                <div class="price-chart">
+                    <h4>🔥 Price Heatmap</h4>
+                    {price_heatmap_html}
+                </div>
+                <div class="price-chart">
+                    <h4>📈 Price vs Duration Trend</h4>
+                    {price_duration_html}
+                </div>
+                <div class="price-chart">
+                    <h4>📅 Price by Days Left</h4>
+                    {price_days_html}
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="routes" class="section">
         <div class="dashboard-card">
             <div class="card-header">🛫 Enhanced Route Analysis</div>
-            {route_bubble_html}
-            {route_fig_html}
+            <div class="route-analysis-grid">
+                <div class="route-chart">
+                    <h4>🚀 Route Bubble Analysis</h4>
+                    {route_bubble_html}
+                </div>
+                <div class="route-chart">
+                    <h4>🌍 Top 20 Route Popularity</h4>
+                    {route_fig_html}
+                </div>
+                <div class="route-chart">
+                    <h4>✈️ Route Price by Airline</h4>
+                    {route_airline_html}
+                </div>
+                <div class="route-chart">
+                    <h4>⚡ Route Efficiency Analysis</h4>
+                    {route_efficiency_html}
+                </div>
+                <div class="route-chart">
+                    <h4>🕸️ Route Network Graph</h4>
+                    {fig_network_html}
+                </div>
+                <div class="route-chart">
+                    <h4>📊 Route Price Distribution</h4>
+                    {route_price_ranges_html}
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="timing" class="section">
         <div class="dashboard-card">
             <div class="card-header">⏰ Enhanced Time Analysis</div>
-            {time_area_html}
-            {demand_html}
+            <div class="time-analysis-grid">
+                <div class="time-chart">
+                    <h4>💰 Price Trends by Time & Class</h4>
+                    {time_area_html}
+                </div>
+                <div class="time-chart">
+                    <h4>📈 Price Trends by Days Left</h4>
+                    {days_price_trend_html}
+                </div>
+                <div class="time-chart">
+                    <h4>🕐 Flight Distribution by Time</h4>
+                    {departure_dist_html}
+                </div>
+                <div class="time-chart">
+                    <h4>🌅 Price vs Duration by Time</h4>
+                    {time_scatter_html}
+                </div>
+                <div class="time-chart">
+                    <h4>📅 Weekly Price Patterns</h4>
+                    {weekly_price_html}
+                </div>
+                <div class="time-chart">
+                    <h4>📊 Demand by Days Left</h4>
+                    {demand_html}
+                </div>
+            </div>
         </div>
     </div>
 
