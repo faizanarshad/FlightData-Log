@@ -117,14 +117,14 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
         rows=3, cols=2,
         subplot_titles=(
             '💰 Price Distribution by Airline',
-            '🗺️ Route Popularity Heatmap',
+            '🗺️ Route Popularity Treemap',
             '⏱️ Price vs Duration Analysis',
             '📊 Market Share by Airline',
             '📅 Booking Patterns by Days Left',
             '🛑 Price Analysis by Stops'
         ),
         specs=[
-            [{"type": "box"}, {"type": "heatmap"}],
+            [{"type": "box"}, {"type": "treemap"}],
             [{"type": "scatter"}, {"type": "pie"}],
             [{"type": "bar"}, {"type": "violin"}]
         ],
@@ -148,17 +148,24 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
             row=1, col=1
         )
 
-    # Enhanced route heatmap with custom colorscale
-    route_matrix = df.groupby(['source_city', 'destination_city']).size().unstack(fill_value=0)
+    # Enhanced route popularity treemap (much better than heatmap)
+    route_counts = df.groupby(['source_city', 'destination_city']).size().reset_index(name='flight_count')
+    route_counts['route'] = route_counts['source_city'] + ' → ' + route_counts['destination_city']
+    route_counts['parent'] = 'Routes'
+    
     fig_main.add_trace(
-        go.Heatmap(
-            z=route_matrix.values, 
-            x=route_matrix.columns, 
-            y=route_matrix.index,
-            colorscale='Viridis',
-            name='Route Popularity',
-            showscale=True,
-            colorbar=dict(title="Flights")
+        go.Treemap(
+            labels=['Routes'] + route_counts['route'].tolist(),
+            parents=[''] + [route_counts['parent'].iloc[i] for i in range(len(route_counts))],
+            values=[0] + route_counts['flight_count'].tolist(),
+            textinfo='label+value',
+            textfont_size=12,
+            marker=dict(
+                colors=route_colors * (len(route_counts) // len(route_colors) + 1),
+                line=dict(width=2, color='white')
+            ),
+            hovertemplate='<b>%{label}</b><br>Flights: %{value}<extra></extra>',
+            name='Route Popularity'
         ),
         row=1, col=2
     )
@@ -320,20 +327,113 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
         title_font_color='#2c3e50'
     )
 
-    # Enhanced heatmap
-    route_matrix = df.groupby(['source_city', 'destination_city']).size().unstack(fill_value=0)
-    fig_route = px.imshow(
-        route_matrix,
-        title='Route Popularity Heatmap',
-        labels=dict(x="Destination City", y="Source City", color="Number of Flights"),
-        color_continuous_scale='Viridis',
-        aspect='auto'
-    )
+    # Enhanced route sunburst chart (much more attractive than heatmap)
+    route_sunburst = df.groupby(['source_city', 'destination_city']).size().reset_index(name='flight_count')
+    route_sunburst['route'] = route_sunburst['source_city'] + ' → ' + route_sunburst['destination_city']
+    
+    fig_route = go.Figure(go.Sunburst(
+        labels=['All Routes'] + route_sunburst['source_city'].unique().tolist() + route_sunburst['route'].tolist(),
+        parents=[''] + ['All Routes'] * len(route_sunburst['source_city'].unique()) + route_sunburst['source_city'].tolist(),
+        values=[0] + [0] * len(route_sunburst['source_city'].unique()) + route_sunburst['flight_count'].tolist(),
+        branchvalues='total',
+        textinfo='label+value',
+        textfont_size=12,
+        marker=dict(
+            colors=route_colors * (len(route_sunburst) // len(route_colors) + 1),
+            line=dict(width=2, color='white')
+        ),
+        hovertemplate='<b>%{label}</b><br>Flights: %{value}<extra></extra>'
+    ))
+    
     fig_route.update_layout(
-        template='plotly_white', 
+        title='Route Popularity Sunburst Chart',
         title_font_size=22,
-        title_font_color='#2c3e50'
+        title_font_color='#2c3e50',
+        template='plotly_white',
+        height=600
     )
+    
+    # Add a beautiful network graph for top routes
+    print("🕸️ Creating Route Network Graph...")
+    top_routes = df.groupby(['source_city', 'destination_city']).size().reset_index(name='flight_count')
+    top_routes = top_routes.nlargest(15, 'flight_count')  # Top 15 routes
+    
+    # Create network graph
+    nodes = list(set(top_routes['source_city'].tolist() + top_routes['destination_city'].tolist()))
+    node_indices = {node: i for i, node in enumerate(nodes)}
+    
+    edge_x = []
+    edge_y = []
+    edge_weights = []
+    
+    for _, route in top_routes.iterrows():
+        x0, y0 = node_indices[route['source_city']], node_indices[route['destination_city']]
+        edge_x.extend([x0, y0, None])
+        edge_y.extend([y0, x0, None])
+        edge_weights.extend([route['flight_count'], route['flight_count'], None])
+    
+    node_trace = go.Scatter(
+        x=[], y=[],
+        text=[],
+        mode='markers+text',
+        hoverinfo='text',
+        marker=dict(
+            showscale=True,
+            colorscale='Viridis',
+            size=20,
+            colorbar=dict(
+                thickness=15,
+                title='Node Connections',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2,
+            line_color='white'
+        ),
+        textposition='middle center',
+        textfont=dict(size=12, color='white')
+    )
+    
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=2, color='#888'),
+        hoverinfo='none',
+        mode='lines'
+    )
+    
+    # Position nodes in a circle
+    import math
+    node_x = []
+    node_y = []
+    node_text = []
+    node_colors = []
+    
+    for i, node in enumerate(nodes):
+        angle = 2 * math.pi * i / len(nodes)
+        node_x.append(math.cos(angle))
+        node_y.append(math.sin(angle))
+        node_text.append(node)
+        node_colors.append(len([r for _, r in top_routes.iterrows() if r['source_city'] == node or r['destination_city'] == node]))
+    
+    node_trace.x = node_x
+    node_trace.y = node_y
+    node_trace.text = node_text
+    node_trace.marker.color = node_colors
+    node_trace.marker.size = [max(15, c * 2) for c in node_colors]  # Size based on connections
+    
+    fig_network = go.Figure(data=[edge_trace, node_trace],
+                           layout=go.Layout(
+                               title='Top Routes Network Graph',
+                               titlefont_size=22,
+                               title_font_color='#2c3e50',
+                               showlegend=False,
+                               hovermode='closest',
+                               margin=dict(b=20,l=5,r=5,t=40),
+                               xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                               yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                               template='plotly_white',
+                               height=500
+                           ))
 
     # 4. Enhanced time analysis with area charts
     print("⏰ Creating Enhanced Time Analysis...")
@@ -406,7 +506,7 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
         title_font_color='#2c3e50'
     )
 
-    return (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, 
+    return (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, fig_network,
             fig_time_area, fig_ml_performance, fig_demand)
 
 def create_price_predictor_widget():
@@ -516,7 +616,7 @@ def main():
     model_results, demand_model, demand_mae, demand_r2, scaler, le_airline, le_source, le_dest, le_class, le_stops, le_dep_time, le_arr_time = create_ml_models(df)
 
     # Create enhanced visualizations
-    (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, 
+    (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, fig_network,
      fig_time_area, fig_ml_performance, fig_demand) = create_enhanced_visualizations(df, model_results, demand_model, demand_mae, demand_r2)
 
     # Convert figures to embeddable HTML fragments
