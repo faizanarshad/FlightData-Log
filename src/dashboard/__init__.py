@@ -1,3 +1,3 @@
-# Dashboard Module
-from .modern_dashboard import *
-from .beautiful_dashboard import * 
+# Dashboard package
+# Expose only the beautiful dashboard entry point
+from .beautiful_dashboard import main as build_beautiful_dashboard 
