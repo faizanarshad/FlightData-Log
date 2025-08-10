@@ -117,14 +117,14 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
         rows=3, cols=2,
         subplot_titles=(
             '💰 Price Distribution by Airline',
-            '🗺️ Route Popularity Treemap',
+            '✈️ Airline Performance Radar',
             '⏱️ Price vs Duration Analysis',
             '📊 Market Share by Airline',
             '📅 Booking Patterns by Days Left',
             '🛑 Price Analysis by Stops'
         ),
         specs=[
-            [{"type": "box"}, {"type": "treemap"}],
+            [{"type": "box"}, {"type": "scatterpolar"}],
             [{"type": "scatter"}, {"type": "pie"}],
             [{"type": "bar"}, {"type": "violin"}]
         ],
@@ -148,27 +148,67 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
             row=1, col=1
         )
 
-    # Enhanced route popularity treemap (much better than heatmap)
-    route_counts = df.groupby(['source_city', 'destination_city']).size().reset_index(name='flight_count')
-    route_counts['route'] = route_counts['source_city'] + ' → ' + route_counts['destination_city']
-    route_counts['parent'] = 'Routes'
+    # Enhanced Airline Performance Radar Chart (replacing route popularity heatmap)
+    airline_metrics = df.groupby('airline').agg({
+        'price': ['mean', 'std'],
+        'duration': 'mean',
+        'days_left': 'mean'
+    }).round(2)
+    airline_metrics.columns = ['avg_price', 'price_std', 'avg_duration', 'avg_days_left']
+    airline_metrics = airline_metrics.reset_index()
+    
+    # Normalize metrics for radar chart (0-1 scale)
+    for col in ['avg_price', 'price_std', 'avg_duration', 'avg_days_left']:
+        airline_metrics[f'{col}_norm'] = (airline_metrics[col] - airline_metrics[col].min()) / (airline_metrics[col].max() - airline_metrics[col].min())
+    
+    # Select top 6 airlines for better visualization
+    top_airlines = airline_metrics.nlargest(6, 'avg_price')
+    
+    # Create radar chart
+    categories = ['Price', 'Price Stability', 'Duration', 'Advance Booking']
     
     fig_main.add_trace(
-        go.Treemap(
-            labels=['Routes'] + route_counts['route'].tolist(),
-            parents=[''] + [route_counts['parent'].iloc[i] for i in range(len(route_counts))],
-            values=[0] + route_counts['flight_count'].tolist(),
-            textinfo='label+value',
-            textfont_size=12,
-            marker=dict(
-                colors=route_colors * (len(route_counts) // len(route_colors) + 1),
-                line=dict(width=2, color='white')
-            ),
-            hovertemplate='<b>%{label}</b><br>Flights: %{value}<extra></extra>',
-            name='Route Popularity'
+        go.Scatterpolar(
+            r=top_airlines['avg_price_norm'].tolist() + [top_airlines['avg_price_norm'].iloc[0]],
+            theta=categories + [categories[0]],
+            fill='toself',
+            name='Airline Performance',
+            line_color='#FF6B6B',
+            fillcolor='rgba(255, 107, 107, 0.3)',
+            hovertemplate='<b>%{text}</b><br>Price: %{r:.2f}<extra></extra>',
+            text=top_airlines['airline'].tolist() + [top_airlines['airline'].iloc[0]]
         ),
         row=1, col=2
     )
+    
+    # Add individual airline traces
+    for i, airline in enumerate(top_airlines['airline']):
+        airline_data = top_airlines[top_airlines['airline'] == airline].iloc[0]
+        values = [
+            airline_data['avg_price_norm'],
+            airline_data['price_std_norm'],
+            airline_data['avg_duration_norm'],
+            airline_data['avg_days_left_norm']
+        ]
+        values.append(values[0])  # Close the polygon
+        
+        # Convert hex to rgba for transparency
+        hex_color = airline_colors[i % len(airline_colors)]
+        rgba_color = f'rgba({int(hex_color[1:3], 16)}, {int(hex_color[3:5], 16)}, {int(hex_color[5:7], 16)}, 0.1)'
+        
+        fig_main.add_trace(
+            go.Scatterpolar(
+                r=values,
+                theta=categories + [categories[0]],
+                fill='toself',
+                name=airline,
+                line_color=hex_color,
+                fillcolor=rgba_color,
+                hovertemplate=f'<b>{airline}</b><br>Price: {airline_data["avg_price"]:.0f}$<br>Duration: {airline_data["avg_duration"]:.1f}h<br>Advance: {airline_data["avg_days_left"]:.0f} days<extra></extra>',
+                showlegend=False
+            ),
+            row=1, col=2
+        )
 
     # Enhanced price vs duration with better styling
     sample_df = df.sample(3000)
