@@ -48,8 +48,8 @@ Examples:
     
     parser.add_argument(
         '--data',
-        default='data/raw/airlines_flights_data.csv',
-        help='Path to the dataset (default: data/raw/airlines_flights_data.csv)'
+        default=None,
+        help='Path to the dataset (default: airlines_flights_data.csv at project root, else data/raw/…)'
     )
     
     args = parser.parse_args()
@@ -76,10 +76,10 @@ def run_analysis(args):
         from src.analysis.data_analysis_explorer import main as explorer_main
         
         print("  - Reading dataset...")
-        read_main()
+        read_main(data_path=args.data)
         
         print("  - Running comprehensive analysis...")
-        explorer_main()
+        explorer_main(data_path=args.data)
         
         print("✅ Analysis completed successfully!")
         
@@ -108,7 +108,7 @@ def run_dashboard(args):
         from src.dashboard.beautiful_dashboard import main as beautiful_main
         
         print("  - Creating beautiful dashboard...")
-        beautiful_main()
+        beautiful_main(data_path=args.data)
         
         print("✅ Dashboards created successfully!")
         print(f"📁 Dashboards saved to: {args.output}")

@@ -3,7 +3,8 @@
 
 # Data Configuration
 data:
-  raw_data_path: "data/raw/airlines_flights_data.csv"
+  # Prefer airlines_flights_data.csv at repo root; legacy: data/raw/airlines_flights_data.csv
+  raw_data_path: "airlines_flights_data.csv"
   processed_data_path: "data/processed/"
   output_path: "output/"
 

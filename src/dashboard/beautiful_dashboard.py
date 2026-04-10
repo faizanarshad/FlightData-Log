@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import warnings
 import os
+import json
 import plotly.io as pio
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
@@ -17,6 +18,8 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import warnings
 warnings.filterwarnings('ignore')
+
+from src.data_paths import resolve_data_path
 
 def create_ml_models(df):
     """Create and train ML models for price prediction and demand forecasting."""
@@ -1204,23 +1207,33 @@ def create_enhanced_visualizations(df, model_results, demand_model, demand_mae, 
             fig_route_efficiency, fig_route_price_ranges, fig_days_price_trend,
             fig_departure_dist, fig_time_scatter, fig_weekly_price)
 
+
+def build_predictor_payload(model_results, scaler, le_airline, le_source, le_dest, le_class, le_stops, le_dep_time, le_arr_time):
+    """Serialize LinearRegression + StandardScaler for client-side price prediction."""
+    lr = model_results["Linear Regression"]["model"]
+    return {
+        "means": scaler.mean_.tolist(),
+        "scales": scaler.scale_.tolist(),
+        "coef": lr.coef_.tolist(),
+        "intercept": float(lr.intercept_),
+        "airlines": le_airline.classes_.tolist(),
+        "sources": le_source.classes_.tolist(),
+        "dests": le_dest.classes_.tolist(),
+        "classes": le_class.classes_.tolist(),
+        "stops": le_stops.classes_.tolist(),
+        "dep_times": le_dep_time.classes_.tolist(),
+        "arr_times": le_arr_time.classes_.tolist(),
+        "r2": float(model_results["Linear Regression"]["r2"]),
+    }
+
+
 def create_price_predictor_widget():
     """Create HTML for interactive price prediction widget."""
     return """
     <div class="prediction-widget">
         <h3>🎯 Price Prediction Tool</h3>
+        <p class="prediction-widget-note">Enter route and trip details below. You will see <strong>predicted prices for every airline</strong> using the same parameters (trained linear regression model on scaled features).</p>
         <div class="widget-grid">
-            <div class="input-group">
-                <label>Airline:</label>
-                <select id="airline-select">
-                    <option value="Vistara">Vistara</option>
-                    <option value="Air_India">Air India</option>
-                    <option value="Indigo">Indigo</option>
-                    <option value="GO_FIRST">GO FIRST</option>
-                    <option value="AirAsia">AirAsia</option>
-                    <option value="SpiceJet">SpiceJet</option>
-                </select>
-            </div>
             <div class="input-group">
                 <label>Source City:</label>
                 <select id="source-select">
@@ -1294,13 +1307,13 @@ def create_price_predictor_widget():
     </div>
     """
 
-def main():
+def main(data_path=None):
     """Main function to create an enhanced dashboard with ML models."""
     print("🎨 CREATING ENHANCED BEAUTIFUL DASHBOARD WITH ML MODELS")
     print("="*70)
 
     # Read the dataset
-    data_path = 'data/raw/airlines_flights_data.csv'
+    data_path = resolve_data_path(data_path)
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Data file not found: {data_path}")
     
@@ -1309,6 +1322,20 @@ def main():
 
     # Create ML models
     model_results, demand_model, demand_mae, demand_r2, scaler, le_airline, le_source, le_dest, le_class, le_stops, le_dep_time, le_arr_time = create_ml_models(df)
+
+    predictor_json = json.dumps(
+        build_predictor_payload(
+            model_results,
+            scaler,
+            le_airline,
+            le_source,
+            le_dest,
+            le_class,
+            le_stops,
+            le_dep_time,
+            le_arr_time,
+        )
+    )
 
     # Create enhanced visualizations
     (fig_main, fig_3d, fig_price, fig_route_bubble, fig_route, fig_network,
@@ -1482,6 +1509,14 @@ def main():
             margin-bottom: 25px;
             font-size: 1.5rem;
         }}
+
+        .prediction-widget-note {{
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            opacity: 0.95;
+            line-height: 1.45;
+        }}
         
         .widget-grid {{
             display: grid;
@@ -1534,9 +1569,38 @@ def main():
             padding: 20px;
             background: rgba(255,255,255,0.1);
             border-radius: 15px;
-            text-align: center;
-            font-size: 1.2rem;
+            text-align: left;
+            font-size: 1rem;
             min-height: 60px;
+        }}
+
+        .prediction-result table {{
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+        }}
+
+        .prediction-result th, .prediction-result td {{
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+        }}
+
+        .prediction-result th {{
+            font-weight: 700;
+            text-align: left;
+            background: rgba(0,0,0,0.15);
+        }}
+
+        .prediction-result tr.row-lowest td {{
+            background: rgba(46, 204, 113, 0.25);
+            font-weight: 600;
+        }}
+
+        .prediction-result .model-meta {{
+            margin-top: 12px;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-align: center;
         }}
         
         /* Price Analysis Grid Styling */
@@ -1873,6 +1937,10 @@ def main():
         </div>
     </div>
 
+    <script id="predictor-config" type="application/json">
+{predictor_json}
+    </script>
+
     <script>
         function showSection(sectionId) {{
             const sections = document.querySelectorAll('.section');
@@ -1885,60 +1953,89 @@ def main():
             event.target.classList.add('active');
         }}
         
+        function encodeLabel(val, classes) {{
+            const idx = classes.indexOf(val);
+            return idx >= 0 ? idx : 0;
+        }}
+
+        function formatAirlineDisplay(code) {{
+            if (code === 'GO_FIRST') return 'GO FIRST';
+            return String(code).replace(/_/g, ' ');
+        }}
+
+        function predictPriceForAirline(P, airline, source, dest, classType, stops, depTime, arrTime, duration, daysLeft) {{
+            const raw = [
+                encodeLabel(airline, P.airlines),
+                encodeLabel(source, P.sources),
+                encodeLabel(dest, P.dests),
+                encodeLabel(classType, P.classes),
+                encodeLabel(stops, P.stops),
+                encodeLabel(depTime, P.dep_times),
+                encodeLabel(arrTime, P.arr_times),
+                duration,
+                daysLeft
+            ];
+            const scaled = raw.map((v, i) => {{
+                const s = P.scales[i];
+                const denom = (s === 0 || !isFinite(s)) ? 1 : s;
+                return (v - P.means[i]) / denom;
+            }});
+            let price = P.intercept;
+            for (let i = 0; i < scaled.length; i++) {{
+                price += P.coef[i] * scaled[i];
+            }}
+            // Linear regression is unconstrained; clip so ticket price is never shown negative
+            return Math.max(0, price);
+        }}
+
         function predictPrice() {{
-            // This is a simplified prediction - in a real app, you'd send data to a backend
-            const airline = document.getElementById('airline-select').value;
+            const cfgEl = document.getElementById('predictor-config');
+            if (!cfgEl) {{
+                document.getElementById('prediction-result').innerHTML = '<span>Prediction model not loaded.</span>';
+                return;
+            }}
+            let P;
+            try {{
+                P = JSON.parse(cfgEl.textContent);
+            }} catch (e) {{
+                document.getElementById('prediction-result').innerHTML = '<span>Invalid prediction configuration.</span>';
+                return;
+            }}
+
             const source = document.getElementById('source-select').value;
             const dest = document.getElementById('dest-select').value;
             const classType = document.getElementById('class-select').value;
             const stops = document.getElementById('stops-select').value;
             const duration = parseFloat(document.getElementById('duration-input').value);
-            const daysLeft = parseInt(document.getElementById('days-input').value);
+            const daysLeft = parseInt(document.getElementById('days-input').value, 10);
             const depTime = document.getElementById('dep-time-select').value;
             const arrTime = document.getElementById('arr-time-select').value;
-            
-            // Simple heuristic-based prediction (replace with actual ML model)
-            let basePrice = 5000;
-            
-            // Airline adjustments
-            const airlineMultipliers = {{
-                'Vistara': 1.8,
-                'Air_India': 1.4,
-                'Indigo': 1.0,
-                'GO_FIRST': 1.1,
-                'AirAsia': 0.8,
-                'SpiceJet': 1.0
-            }};
-            
-            // Class adjustments
-            const classMultipliers = {{
-                'Economy': 1.0,
-                'Business': 2.5
-            }};
-            
-            // Stops adjustments
-            const stopsMultipliers = {{
-                'zero': 1.2,
-                'one': 1.0,
-                'two_or_more': 0.8
-            }};
-            
-            // Days left adjustments
-            const daysMultiplier = Math.max(1.5, 3 - (daysLeft / 20));
-            
-            // Duration adjustments
-            const durationMultiplier = 1 + (duration / 20);
-            
-            const predictedPrice = basePrice * 
-                                 airlineMultipliers[airline] * 
-                                 classMultipliers[classType] * 
-                                 stopsMultipliers[stops] * 
-                                 daysMultiplier * 
-                                 durationMultiplier;
-            
-            document.getElementById('prediction-result').innerHTML = 
-                `<strong>Predicted Price: ${{predictedPrice.toFixed(0)}}</strong><br>
-                 <small>Based on selected parameters and historical patterns</small>`;
+
+            if (!isFinite(duration) || !isFinite(daysLeft)) {{
+                document.getElementById('prediction-result').innerHTML = '<span>Please enter valid duration and days left.</span>';
+                return;
+            }}
+
+            const rows = [];
+            for (let i = 0; i < P.airlines.length; i++) {{
+                const airline = P.airlines[i];
+                const p = predictPriceForAirline(P, airline, source, dest, classType, stops, depTime, arrTime, duration, daysLeft);
+                rows.push({{ airline, price: p, label: formatAirlineDisplay(airline) }});
+            }}
+            rows.sort((a, b) => a.price - b.price);
+
+            let html = '<table><thead><tr><th>Airline</th><th>Predicted price ($)</th></tr></thead><tbody>';
+            const lowest = rows.length ? rows[0].price : null;
+            for (let j = 0; j < rows.length; j++) {{
+                const r = rows[j];
+                const isLow = lowest !== null && Math.abs(r.price - lowest) < 1e-6;
+                const cls = isLow ? ' class="row-lowest"' : '';
+                html += '<tr' + cls + '><td>' + r.label + '</td><td>' + r.price.toFixed(0) + '</td></tr>';
+            }}
+            html += '</tbody></table>';
+            html += '<div class="model-meta">Linear regression (same scaling as training) · R² = ' + P.r2.toFixed(3) + ' · sorted cheapest → most expensive · values below $0 are shown as $0 (model extrapolation)</div>';
+
+            document.getElementById('prediction-result').innerHTML = html;
         }}
         
         // Initialize first button as active

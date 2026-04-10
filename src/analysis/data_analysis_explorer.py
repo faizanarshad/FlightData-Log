@@ -7,7 +7,9 @@ import warnings
 import os
 warnings.filterwarnings('ignore')
 
-def main():
+from src.data_paths import resolve_data_path
+
+def main(data_path=None):
     """Main function to run comprehensive data analysis."""
     # Set style for better plots
     plt.style.use('seaborn-v0_8')
@@ -17,7 +19,7 @@ def main():
     print("="*60)
 
     # Read the dataset
-    data_path = 'data/raw/airlines_flights_data.csv'
+    data_path = resolve_data_path(data_path)
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Data file not found: {data_path}")
     

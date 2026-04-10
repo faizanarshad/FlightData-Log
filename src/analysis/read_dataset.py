@@ -5,8 +5,11 @@ import seaborn as sns
 import os
 from pathlib import Path
 
-def load_data(data_path='data/raw/airlines_flights_data.csv'):
-    """Load the airlines dataset from the specified path."""
+from src.data_paths import resolve_data_path
+
+def load_data(data_path=None):
+    """Load the airlines dataset from the specified path or default location."""
+    data_path = resolve_data_path(data_path)
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Data file not found: {data_path}")
     
@@ -29,10 +32,10 @@ def get_data_info(df):
     }
     return info
 
-def main():
+def main(data_path=None):
     """Main function to run the data analysis."""
     # Read the dataset
-    df = load_data()
+    df = load_data(data_path)
 
     # Basic information about the dataset
     print("\n" + "="*50)
